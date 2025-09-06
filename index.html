@@ -38,10 +38,8 @@
 </head>
 <body>
   <header>
-    <h1>CRAFT CALCULATOR — AUTO PRICES (WEAPONS)</h1>
+    <h1>CRAFT CALCULATOR — AUTO PRICES (WEAPONS & OFFHANDS)</h1>
     <div class="muted" id="subheader">Ładowanie cen…</div>
-
-    <!-- przycisk przełączania -->
     <button class="swap-btn" onclick="window.location.href='armor.html'">CLICK TO SWAP TO ARMOR CRAFT</button>
   </header>
 
@@ -139,9 +137,10 @@
     const ENCHANTS = [0, 1, 2, 3, 4];
 
     // -------------------------
-    // itemsData (WEAPONS)
+    // itemsData (WEAPONS + OFFHANDS)
     // -------------------------
     const itemsData = {
+      // --- Weapons ---
       "1H Arcane": { mats: [{ type: "planks", qty: 16 }, { type: "bars", qty: 8 }] },
       "Great Arcane": { mats: [{ type: "planks", qty: 20 }, { type: "bars", qty: 12 }] },
       "Enigmatic": { mats: [{ type: "planks", qty: 20 }, { type: "bars", qty: 12 }] },
@@ -189,7 +188,13 @@
       "Glaive": { mats: [{ type: "planks", qty: 20 }, { type: "bars", qty: 12 }] },
       "Broadsword": { mats: [{ type: "bars", qty: 16 }, { type: "leather", qty: 8 }] },
       "Claymore": { mats: [{ type: "bars", qty: 20 }, { type: "leather", qty: 12 }] },
-      "Dual swords": { mats: [{ type: "bars", qty: 20 }, { type: "leather", qty: 12 }] }
+      "Dual swords": { mats: [{ type: "bars", qty: 20 }, { type: "leather", qty: 12 }] },
+
+      // --- Offhands ---
+      "Offhand Torch":   { mats: [{ type: "planks", qty: 4 }, { type: "leather", qty: 4 }] },
+      "Offhand Shield":  { mats: [{ type: "planks", qty: 4 }, { type: "bars", qty: 4 }] },
+      "Offhand Tome":    { mats: [{ type: "planks", qty: 4 }, { type: "cloth", qty: 4 }] },
+      "Offhand Orb":     { mats: [{ type: "bars", qty: 4 },   { type: "cloth", qty: 4 }] }
     };
 
     const materialsPrices = { planks: {}, bars: {}, leather: {}, cloth: {} };
@@ -315,31 +320,24 @@
       const matsText = [];
       const matsNeededForAmount = [];
 
-      // compute raw cost per one and build mats text
       for (const mat of item.mats) {
         const key = `${tier}.${enchant}`;
         const unitPrice = materialsPrices[mat.type]?.[key] ?? 0;
         const qtyPerItem = mat.qty;
-
         rawCostPerOne += qtyPerItem * unitPrice;
         matsText.push(`${qtyPerItem} ${mat.type} (${toPL(unitPrice)} ea) = ${toPL(qtyPerItem * unitPrice)} silver`);
       }
 
-      // effective cost per one after return rate (net cost)
       const effectiveCostPerOne = rawCostPerOne * (1 - returnRate / 100);
-
-      // materials needed for amount (net consumed after return)
       for (const mat of item.mats) {
         const qtyNeeded = mat.qty * amount * (1 - returnRate / 100);
         matsNeededForAmount.push(`${qtyNeeded.toFixed(2)} ${mat.type}`);
       }
 
-      // totals
-      const totalRawCostOne = Math.round(rawCostPerOne);                         // before return, 1 item
-      const totalRawCostAmount = Math.round(rawCostPerOne * amount);            // before return, amount
-      const totalEffectiveCostAmount = Math.round(effectiveCostPerOne * amount); // after return, amount
+      const totalRawCostOne = Math.round(rawCostPerOne);
+      const totalRawCostAmount = Math.round(rawCostPerOne * amount);
+      const totalEffectiveCostAmount = Math.round(effectiveCostPerOne * amount);
 
-      // craft text (multi-line)
       document.getElementById("craft-text").textContent =
         `Crafting one ${itemName} requires:\n${matsText.join("\n")}\n\n` +
         `Raw materials cost (1 item, before return) = ${toPL(totalRawCostOne)} silver.\n` +
@@ -348,7 +346,6 @@
         `Total effective cost after return for ${amount} items: ${toPL(totalEffectiveCostAmount)} silver.\n\n` +
         `Materials needed for ${amount} pcs (after return rate):\n${matsNeededForAmount.join("\n")}`;
 
-      // profit
       const profitPerOne = sellPrice - effectiveCostPerOne;
       const profitTotal = profitPerOne * amount;
 
@@ -360,8 +357,6 @@
     });
 
     document.getElementById("refresh").addEventListener("click", fetchPricesAll);
-
-    // initial fetch
     fetchPricesAll();
   </script>
 </body>
