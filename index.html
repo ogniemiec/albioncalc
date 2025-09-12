@@ -1,23 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <title>Choose Your Craft</title>
-  <link rel="stylesheet" href="mains.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Albion Crafting Calculator</title>
+    <!-- Link do arkusza stylów CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Możesz też dodać czcionkę, np. z Google Fonts, dla lepszego wyglądu -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <h1>choose your craft</h1>
-  <div class="craft-container">
-    <div class="craft-option">
-      <h2>weapon & offhands</h2>
-      <img src="images/T8_MAIN_SWORD.png" alt="Weapon & Offhand">
-      <button>Go</button>
+
+    <div class="main-container">
+        <!-- Główny nagłówek -->
+        <h1 class="welcome-heading">Welcome, select your crafts for today:</h1>
+
+        <!-- Kontener na opcje wyboru -->
+        <div class="options-container">
+            
+            <!-- Opcja 1: Broń i Offhandy -->
+            <a href="1index.html" class="craft-option">
+                <!-- WAŻNE: Podmień 'images/weapons-icon.png' na ścieżkę do Twojej ikonki -->
+                <img src="images/T8_MAIN_SWORD.png" alt="Weapons and Offhands Icon">
+                <h2>Weapons & Offhands Craft</h2>
+            </a>
+
+            <!-- Opcja 2: Zbroje -->
+            <a href="armor.html" class="craft-option">
+                <!-- WAŻNE: Podmień 'images/armor-icon.png' na ścieżkę do Twojej ikonki -->
+                <img src="images/T8_ARMOR_LEATHER_SET1.png" alt="Armors Icon">
+                <h2>Armors Craft</h2>
+            </a>
+
+        </div>
     </div>
-    <div class="craft-option">
-      <h2>armors</h2>
-      <img src="images/T8_ARMOR_LEATHER_SET1.png" alt="Armors">
-      <button>Go</button>
-    </div>
-  </div>
+
 </body>
 </html>
