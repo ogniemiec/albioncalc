@@ -127,7 +127,6 @@
       leather: "Martlock",
       cloth: "Lymhurst",
     };
-
     const MATERIAL_BASE_ID = {
       planks: "PLANKS",
       bars: "METALBAR",
@@ -137,9 +136,6 @@
     const TIERS = [4, 5, 6, 7, 8];
     const ENCHANTS = [0, 1, 2, 3, 4];
 
-    // -------------------------
-    // itemsData (WEAPONS + OFFHANDS)
-    // -------------------------
     const itemsData = {
       "1H Arcane": { mats: [{ type: "planks", qty: 16 }, { type: "bars", qty: 8 }] },
       "Great Arcane": { mats: [{ type: "planks", qty: 20 }, { type: "bars", qty: 12 }] },
@@ -189,8 +185,6 @@
       "Broadsword": { mats: [{ type: "bars", qty: 16 }, { type: "leather", qty: 8 }] },
       "Claymore": { mats: [{ type: "bars", qty: 20 }, { type: "leather", qty: 12 }] },
       "Dual swords": { mats: [{ type: "bars", qty: 20 }, { type: "leather", qty: 12 }] },
-
-      // --- Offhands ---
       "Offhand Torch":   { mats: [{ type: "planks", qty: 4 }, { type: "leather", qty: 4 }] },
       "Offhand Shield":  { mats: [{ type: "planks", qty: 4 }, { type: "bars", qty: 4 }] },
       "Offhand Tome":    { mats: [{ type: "planks", qty: 4 }, { type: "cloth", qty: 4 }] },
@@ -199,15 +193,11 @@
 
     const materialsPrices = { planks: {}, bars: {}, leather: {}, cloth: {} };
     let lastUpdatedAt = null;
-
     function toPL(n) { return Number(n).toLocaleString('pl-PL'); }
 
     function buildItemId(mat, tier, enchant) {
       const base = MATERIAL_BASE_ID[mat];
-      if (!base) throw new Error("Nieznany materiał: " + mat);
-      return enchant > 0
-        ? `T${tier}_${base}_LEVEL${enchant}@${enchant}`
-        : `T${tier}_${base}`;
+      return enchant > 0 ? `T${tier}_${base}_LEVEL${enchant}@${enchant}` : `T${tier}_${base}`;
     }
 
     async function fetchJSON(url) {
@@ -223,18 +213,128 @@
         const hist = await fetchJSON(urlHist);
         const first = Array.isArray(hist) ? hist[0] : null;
         const series = first && Array.isArray(first.data) ? first.data : [];
-        const last24 = series.slice(-24)
-          .map(d => Number(d?.avg_price ?? d?.average_price ?? d?.price ?? d?.sell_price_min ?? 0))
-          .filter(x => x > 0);
+        const last24 = series.slice(-24).map(d => Number(d?.avg_price ?? d?.price ?? 0)).filter(x => x > 0);
         if (last24.length > 0) {
           const avg = last24.reduce((a,b)=>a+b,0) / last24.length;
           return Math.round(avg * 0.95);
         }
-      } catch (e) {}
+      } catch {}
       try {
         const urlNow = `${API_HOST}/api/v2/stats/prices/${itemId}.json?locations=${encCity}`;
         const now = await fetchJSON(urlNow);
         const obj = Array.isArray(now) ? now[0] : null;
         const min = Number(obj?.sell_price_min ?? 0);
         if (min > 0) return Math.round(min * 0.95);
+      } catch {}
+      return 0;
+    }
+
+    async function pLimitAll(tasks, limit = 8, onProgress = null) {
+      let idx = 0, done = 0, results = new Array(tasks.length);
+      const runners = new Array(Math.min(limit, tasks.length)).fill(0).map(async () => {
+        while (true) {
+          const i = idx++;
+          if (i >= tasks.length) break;
+          try { results[i] = await tasks[i](); }
+          catch { results[i] = undefined; }
+          done++;
+          if (onProgress) onProgress(done, tasks.length);
+        }
+      });
+      await Promise.all(runners);
+      return results;
+    }
+
+    async function fetchPricesAll() {
+      const loadStatus = document.getElementById("load-status");
+      const loadProgress = document.getElementById("load-progress");
+      const subheader = document.getElementById("subheader");
+      loadStatus.textContent = "Ładowanie…"; loadStatus.className = "badge"; loadProgress.value = 0; loadProgress.max = 1;
+
+      const jobs = [];
+      for (const mat of Object.keys(materialCities)) {
+        for (const tier of TIERS) {
+          for (const ench of ENCHANTS) {
+            const key = `${tier}.${ench}`;
+            const city = materialCities[mat];
+            const itemId = buildItemId(mat, tier, ench);
+            jobs.push(async () => {
+              const price = await fetchAvg24hMinus5(itemId, city);
+              materialsPrices[mat][key] = price;
+              return { mat, key, price };
+            });
+          }
+        }
       }
+
+      const total = jobs.length;
+      loadProgress.max = total;
+      await pLimitAll(jobs, 8, (done) => { loadProgress.value = done; });
+
+      lastUpdatedAt = new Date();
+      const okCount = Object.values(materialsPrices).flatMap(o=>Object.values(o)).filter(v=>v>0).length;
+      const txt = okCount > 0 ? `Ceny zaktualizowane (${okCount}/${total})` : "Brak danych z API — użyte wartości 0";
+      loadStatus.textContent = txt;
+      loadStatus.className = "badge " + (okCount === total ? "ok" : okCount > 0 ? "warn" : "err");
+      document.getElementById("last-updated").textContent = lastUpdatedAt ? `Ostatnia aktualizacja: ${lastUpdatedAt.toLocaleString('pl-PL')}` : "";
+      subheader.textContent = txt;
+    }
+
+    const itemSelect = document.getElementById("item");
+    for (const item of Object.keys(itemsData)) {
+      const opt = document.createElement("option"); opt.value = item; opt.textContent = item; itemSelect.appendChild(opt);
+    }
+
+    document.getElementById("calculate").addEventListener("click", () => {
+      const itemName = itemSelect.value;
+      const tier = document.getElementById("tier").value;
+      const enchant = document.getElementById("enchant").value;
+      const sellPrice = parseInt(document.getElementById("price").value) || 0;
+      const amount = Math.max(1, parseInt(document.getElementById("amount").value) || 1);
+      const returnRate = Math.max(0, Math.min(100, parseFloat(document.getElementById("returnRate").value) || 0));
+
+      const item = itemsData[itemName];
+      let rawCostPerOne = 0;
+      const matsText = [], matsNeededForAmount = [];
+
+      for (const mat of item.mats) {
+        const key = `${tier}.${enchant}`;
+        const unitPrice = materialsPrices[mat.type]?.[key] ?? 0;
+        const qtyPerItem = mat.qty;
+        rawCostPerOne += qtyPerItem * unitPrice;
+        matsText.push(`${qtyPerItem} ${mat.type} (${toPL(unitPrice)} ea) = ${toPL(qtyPerItem * unitPrice)} silver`);
+      }
+
+      const effectiveCostPerOne = rawCostPerOne * (1 - returnRate / 100);
+      for (const mat of item.mats) {
+        const qtyNeeded = mat.qty * amount * (1 - returnRate / 100);
+        matsNeededForAmount.push(`${qtyNeeded.toFixed(2)} ${mat.type}`);
+      }
+
+      const totalRawCostOne = Math.round(rawCostPerOne);
+      const totalRawCostAmount = Math.round(rawCostPerOne * amount);
+      const totalEffectiveCostAmount = Math.round(effectiveCostPerOne * amount);
+
+      document.getElementById("craft-text").textContent =
+        `Crafting one ${itemName} requires:\n${matsText.join("\n")}\n\n` +
+        `Raw materials cost (1 item, before return) = ${toPL(totalRawCostOne)} silver.\n` +
+        `Final raw mats cost (1 item, after return) = ${toPL(Math.round(effectiveCostPerOne))} silver.\n\n` +
+        `Crafting ${amount} ${itemName} requires raw materials worth (before return): ${toPL(totalRawCostAmount)} silver.\n` +
+        `Total effective cost after return for ${amount} items: ${toPL(totalEffectiveCostAmount)} silver.\n\n` +
+        `Materials needed for ${amount} pcs (after return rate):\n${matsNeededForAmount.join("\n")}`;
+
+      const profitPerOne = sellPrice - effectiveCostPerOne;
+      const profitTotal = profitPerOne * amount;
+
+      document.getElementById("profit-text").textContent =
+        `Profit/loss on one ${itemName}: ${toPL(Math.round(profitPerOne))} silver.\n` +
+        `Profit/loss on ${amount} ${itemName}: ${toPL(Math.round(profitTotal))} silver.`;
+
+      document.getElementById("results").scrollIntoView({ behavior: "smooth" });
+    });
+
+    document.getElementById("refresh").addEventListener("click", fetchPricesAll);
+    fetchPricesAll();
+  </script>
+</body>
+</html>
