@@ -30,7 +30,6 @@
     .statusbar { display:flex; align-items:center; gap:.6rem; font-size:.95rem; flex-wrap:wrap; }
     progress { width:230px; height: 10px; accent-color: var(--acc); }
     code.inline { background:#111; padding:.1rem .3rem; border-radius:6px; }
-    /* swap button (top-right) */
     .swap-btn { position:absolute; top:12px; right:12px; padding:.4rem .7rem; background:var(--accent2); color:#fff; border:none; border-radius:8px; cursor:pointer; box-shadow: 0 4px 10px rgba(0,0,0,.25); }
     .swap-btn:hover { filter:brightness(1.05); }
     footer.note { text-align:center; color:#bdbdbd; font-size:.9rem; margin-top:1rem; }
@@ -40,7 +39,7 @@
   <header>
     <h1>CRAFT CALCULATOR — AUTO PRICES (WEAPONS & OFFHANDS)</h1>
     <div class="muted" id="subheader">Ładowanie cen…</div>
-    <button class="swap-btn" onclick="window.location.href='index.html'">BACK TO CRAFT SELECT</button>
+    <button class="swap-btn" onclick="window.location.href='armor.html'">BACK TO CRAFT SELECT</button>
   </header>
 
   <main>
@@ -58,7 +57,7 @@
         <span id="last-updated" class="muted"></span>
       </div>
       <p class="muted" style="margin-top:.6rem;">
-        If the bar doesn't say <strong>60/60</strong> refresh the site <strong>if that won't help</strong>, wait some time and try again.
+        If the bar doesn't say <strong>100/100</strong> refresh the site <strong>if that won't help</strong>, wait some time and try again.
       </p>
     </section>
 
@@ -72,6 +71,8 @@
         <div>
           <label for="tier">Item tier</label>
           <select id="tier">
+            <option value="4">T4</option>
+            <option value="5">T5</option>
             <option value="6">T6</option>
             <option value="7">T7</option>
             <option value="8">T8</option>
@@ -126,21 +127,16 @@
       leather: "Martlock",
       cloth: "Lymhurst",
     };
-
     const MATERIAL_BASE_ID = {
       planks: "PLANKS",
       bars: "METALBAR",
       leather: "LEATHER",
       cloth: "CLOTH",
     };
-    const TIERS = [6, 7, 8];
+    const TIERS = [4, 5, 6, 7, 8];
     const ENCHANTS = [0, 1, 2, 3, 4];
 
-    // -------------------------
-    // itemsData (WEAPONS + OFFHANDS)
-    // -------------------------
     const itemsData = {
-      // --- Weapons ---
       "1H Arcane": { mats: [{ type: "planks", qty: 16 }, { type: "bars", qty: 8 }] },
       "Great Arcane": { mats: [{ type: "planks", qty: 20 }, { type: "bars", qty: 12 }] },
       "Enigmatic": { mats: [{ type: "planks", qty: 20 }, { type: "bars", qty: 12 }] },
@@ -189,8 +185,6 @@
       "Broadsword": { mats: [{ type: "bars", qty: 16 }, { type: "leather", qty: 8 }] },
       "Claymore": { mats: [{ type: "bars", qty: 20 }, { type: "leather", qty: 12 }] },
       "Dual swords": { mats: [{ type: "bars", qty: 20 }, { type: "leather", qty: 12 }] },
-
-      // --- Offhands ---
       "Offhand Torch":   { mats: [{ type: "planks", qty: 4 }, { type: "leather", qty: 4 }] },
       "Offhand Shield":  { mats: [{ type: "planks", qty: 4 }, { type: "bars", qty: 4 }] },
       "Offhand Tome":    { mats: [{ type: "planks", qty: 4 }, { type: "cloth", qty: 4 }] },
@@ -199,15 +193,11 @@
 
     const materialsPrices = { planks: {}, bars: {}, leather: {}, cloth: {} };
     let lastUpdatedAt = null;
-
     function toPL(n) { return Number(n).toLocaleString('pl-PL'); }
 
     function buildItemId(mat, tier, enchant) {
       const base = MATERIAL_BASE_ID[mat];
-      if (!base) throw new Error("Nieznany materiał: " + mat);
-      return enchant > 0
-        ? `T${tier}_${base}_LEVEL${enchant}@${enchant}`
-        : `T${tier}_${base}`;
+      return enchant > 0 ? `T${tier}_${base}_LEVEL${enchant}@${enchant}` : `T${tier}_${base}`;
     }
 
     async function fetchJSON(url) {
@@ -223,21 +213,19 @@
         const hist = await fetchJSON(urlHist);
         const first = Array.isArray(hist) ? hist[0] : null;
         const series = first && Array.isArray(first.data) ? first.data : [];
-        const last24 = series.slice(-24)
-          .map(d => Number(d?.avg_price ?? d?.average_price ?? d?.price ?? d?.sell_price_min ?? 0))
-          .filter(x => x > 0);
+        const last24 = series.slice(-24).map(d => Number(d?.avg_price ?? d?.price ?? 0)).filter(x => x > 0);
         if (last24.length > 0) {
           const avg = last24.reduce((a,b)=>a+b,0) / last24.length;
           return Math.round(avg * 0.95);
         }
-      } catch (e) {}
+      } catch {}
       try {
         const urlNow = `${API_HOST}/api/v2/stats/prices/${itemId}.json?locations=${encCity}`;
         const now = await fetchJSON(urlNow);
         const obj = Array.isArray(now) ? now[0] : null;
         const min = Number(obj?.sell_price_min ?? 0);
         if (min > 0) return Math.round(min * 0.95);
-      } catch (e) {}
+      } catch {}
       return 0;
     }
 
@@ -248,7 +236,7 @@
           const i = idx++;
           if (i >= tasks.length) break;
           try { results[i] = await tasks[i](); }
-          catch (e) { results[i] = undefined; }
+          catch { results[i] = undefined; }
           done++;
           if (onProgress) onProgress(done, tasks.length);
         }
@@ -261,10 +249,7 @@
       const loadStatus = document.getElementById("load-status");
       const loadProgress = document.getElementById("load-progress");
       const subheader = document.getElementById("subheader");
-
-      loadStatus.textContent = "Ładowanie…";
-      loadStatus.className = "badge";
-      loadProgress.value = 0; loadProgress.max = 1;
+      loadStatus.textContent = "Ładowanie…"; loadStatus.className = "badge"; loadProgress.value = 0; loadProgress.max = 1;
 
       const jobs = [];
       for (const mat of Object.keys(materialCities)) {
@@ -284,27 +269,20 @@
 
       const total = jobs.length;
       loadProgress.max = total;
-      await pLimitAll(jobs, 8, (done) => {
-        loadProgress.value = done;
-      });
+      await pLimitAll(jobs, 8, (done) => { loadProgress.value = done; });
 
       lastUpdatedAt = new Date();
       const okCount = Object.values(materialsPrices).flatMap(o=>Object.values(o)).filter(v=>v>0).length;
       const txt = okCount > 0 ? `Ceny zaktualizowane (${okCount}/${total})` : "Brak danych z API — użyte wartości 0";
       loadStatus.textContent = txt;
       loadStatus.className = "badge " + (okCount === total ? "ok" : okCount > 0 ? "warn" : "err");
-      document.getElementById("last-updated").textContent =
-        lastUpdatedAt ? `Ostatnia aktualizacja: ${lastUpdatedAt.toLocaleString('pl-PL')}` : "";
+      document.getElementById("last-updated").textContent = lastUpdatedAt ? `Ostatnia aktualizacja: ${lastUpdatedAt.toLocaleString('pl-PL')}` : "";
       subheader.textContent = txt;
-      console.log("materialsPrices", materialsPrices);
     }
 
-    // populate items select
     const itemSelect = document.getElementById("item");
     for (const item of Object.keys(itemsData)) {
-      const opt = document.createElement("option");
-      opt.value = item; opt.textContent = item;
-      itemSelect.appendChild(opt);
+      const opt = document.createElement("option"); opt.value = item; opt.textContent = item; itemSelect.appendChild(opt);
     }
 
     document.getElementById("calculate").addEventListener("click", () => {
@@ -317,8 +295,7 @@
 
       const item = itemsData[itemName];
       let rawCostPerOne = 0;
-      const matsText = [];
-      const matsNeededForAmount = [];
+      const matsText = [], matsNeededForAmount = [];
 
       for (const mat of item.mats) {
         const key = `${tier}.${enchant}`;
@@ -361,4 +338,3 @@
   </script>
 </body>
 </html>
-
