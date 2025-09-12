@@ -1,41 +1,45 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Albion Crafting Calculator</title>
-    <!-- Link do arkusza stylów CSS -->
-    <link rel="stylesheet" href="mains.css">
-    <!-- Możesz też dodać czcionkę, np. z Google Fonts, dla lepszego wyglądu -->
+    <title>Albion Online Craft Calculator</title>
+    <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-
-    <div class="main-container">
-        <!-- Główny nagłówek -->
-        <h1 class="welcome-heading">Welcome, select your crafts for today:</h1>
-
-        <!-- Kontener na opcje wyboru -->
-        <div class="options-container">
+    <div class="container">
+        <header>
+            <h1 class="main-title">Welcome, select your crafts for today:</h1>
+        </header>
+        
+        <main class="selection-container">
+            <div class="craft-card">
+                <a href="1index.html" class="craft-link">
+                    <div class="craft-button">
+                        <img src="T8_MAIN_SWORD.png" alt="Weapons & Offhands" class="craft-icon">
+                        <h2 class="craft-title">Weapons & Offhands Craft</h2>
+                        <div class="hover-effect"></div>
+                    </div>
+                </a>
+            </div>
             
-            <!-- Opcja 1: Broń i Offhandy -->
-            <a href="1index.html" class="craft-option">
-                <!-- WAŻNE: Podmień 'images/weapons-icon.png' na ścieżkę do Twojej ikonki -->
-                <img src="images/T8_MAIN_SWORD.png" alt="Weapons and Offhands Icon">
-                <h2>Weapons & Offhands Craft</h2>
-            </a>
-
-            <!-- Opcja 2: Zbroje -->
-            <a href="armor.html" class="craft-option">
-                <!-- WAŻNE: Podmień 'images/armor-icon.png' na ścieżkę do Twojej ikonki -->
-                <img src="images/T8_ARMOR_LEATHER_SET1.png" alt="Armors Icon">
-                <h2>Armors Craft</h2>
-            </a>
-
-        </div>
+            <div class="craft-card">
+                <a href="armor.html" class="craft-link">
+                    <div class="craft-button">
+                        <img src="T8_ARMOR_LEATHER_SET1.png" alt="Armors" class="craft-icon">
+                        <h2 class="craft-title">Armors Craft</h2>
+                        <div class="hover-effect"></div>
+                    </div>
+                </a>
+            </div>
+        </main>
+        
+        <footer>
+            <p class="footer-text">Albion Online Craft Calculator © 2024</p>
+        </footer>
     </div>
-
 </body>
 </html>
