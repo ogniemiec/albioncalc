@@ -1,41 +1,90 @@
-body {
-  background-color: #ccc; /* szare tło */
-  font-family: Arial, sans-serif;
-  text-align: center;
-  padding-top: 50px;
+/* --- Style ogólne --- */
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Roboto', sans-serif; /* Używamy czcionki Roboto dla czystego wyglądu */
+    background-color: #2c3e50; /* Ciemnoszare tło, trochę bardziej stonowane */
+    color: #ecf0f1; /* Jasny kolor tekstu dla kontrastu */
 }
 
-h1 {
-  margin-bottom: 50px;
+/* --- Główny kontener centrujący zawartość --- */
+.main-container {
+    display: flex;
+    flex-direction: column; /* Układamy elementy w kolumnie (jeden pod drugim) */
+    justify-content: center; /* Centrujemy w pionie */
+    align-items: center; /* Centrujemy w poziomie */
+    min-height: 100vh; /* Kontener zajmuje co najmniej całą wysokość ekranu */
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box; /* Padding nie powiększa kontenera */
 }
 
-.craft-container {
-  display: flex;
-  justify-content: center;
-  gap: 100px;
+/* --- Nagłówek powitalny --- */
+.welcome-heading {
+    font-size: 2.5em; /* Duży, czytelny rozmiar czcionki */
+    font-weight: 700;
+    margin-bottom: 50px; /* Odstęp od przycisków */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Cień dla lepszej czytelności */
 }
 
+/* --- Kontener dla przycisków/opcji --- */
+.options-container {
+    display: flex;
+    justify-content: center; /* Wyśrodkowanie przycisków */
+    gap: 40px; /* Odstęp między przyciskami */
+    flex-wrap: wrap; /* Pozwala przyciskom przenieść się do nowej linii na mniejszych ekranach */
+}
+
+/* --- Styl pojedynczego przycisku/opcji --- */
 .craft-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+    background-color: #2ecc71; /* Jasnozielony kolor tła dla przycisków */
+    color: #2c3e50; /* Ciemny kolor tekstu na zielonym tle */
+    padding: 30px;
+    border-radius: 15px; /* Zaokrąglone rogi */
+    text-decoration: none; /* Usuwa podkreślenie z linku */
+    width: 250px; /* Stała szerokość dla spójnego wyglądu */
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Cień pod przyciskiem */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Płynne przejście dla animacji */
 }
 
+/* --- Efekt po najechaniu myszką na przycisk --- */
+.craft-option:hover {
+    transform: translateY(-5px) scale(1.03); /* Lekkie uniesienie i powiększenie */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4); /* Zwiększony cień */
+}
+
+/* --- Ikony wewnątrz przycisków --- */
 .craft-option img {
-  width: 150px;
-  height: 150px;
-  margin-bottom: 20px;
+    width: 120px; /* Rozmiar ikony */
+    height: 120px;
+    object-fit: contain; /* Zapewnia, że obrazek się nie zniekształci */
+    margin-bottom: 20px; /* Odstęp między ikoną a tekstem */
 }
 
-.craft-option button {
-  background-color: #2ecc71; /* zielony przycisk */
-  border: none;
-  color: white;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
+/* --- Tekst wewnątrz przycisków --- */
+.craft-option h2 {
+    margin: 0; /* Usuwa domyślny margines nagłówka */
+    font-size: 1.4em;
 }
 
-.craft-option button:hover {
-  background-color: #27ae60;
+/* --- Responsywność dla urządzeń mobilnych --- */
+@media (max-width: 768px) {
+    .welcome-heading {
+        font-size: 1.8em; /* Mniejszy nagłówek na telefonach */
+    }
+
+    .options-container {
+        flex-direction: column; /* Ustawia przyciski jeden pod drugim */
+        gap: 25px; /* Zmniejsza odstęp */
+    }
+
+    .craft-option {
+        width: 80%; /* Przyciski zajmują większość szerokości ekranu */
+    }
 }
