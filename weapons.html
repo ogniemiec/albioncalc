@@ -3,31 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Albion Weapons Craft Calculator — Silver Gothic</title>
+<title>Albion Weapons Craft Calculator</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#101010;
-  --panel:#1c1c1c;
-  --accent:#c0c0c0;
-  --muted:#aaaaaa;
-  --highlight:#d0d0d0;
-  --glass:rgba(255,255,255,0.03);
-  font-family:'Cinzel', serif;
-}
+:root{--bg:#101010;--panel:#1c1c1c;--accent:#c0c0c0;--muted:#aaaaaa;--highlight:#d0d0d0;font-family:'Cinzel', serif;}
 html,body{margin:0;padding:0;height:100%;background:linear-gradient(180deg,#101010,#0a0a0a);color:var(--muted);}
 .container{max-width:900px;margin:32px auto;padding:28px;border-radius:16px;background:linear-gradient(180deg,var(--panel),#121212);box-shadow:0 8px 40px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);}
 header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
 .logo{width:80px;height:80px;border-radius:12px;background:linear-gradient(135deg,#1a1a1a,#2c2c2c);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 18px rgba(0,0,0,0.6);}
 .logo h1{margin:0;font-size:20px;color:var(--highlight);}
 h2.title{margin:0;color:var(--highlight);font-size:28px}
-nav.menu{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
-.btn{background:linear-gradient(180deg,#202020,#141414);padding:8px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);cursor:pointer;color:var(--muted);box-shadow:0 4px 12px rgba(0,0,0,0.6)}
-.btn.primary{color:var(--highlight);border:1px solid rgba(192,192,192,0.2)}
-.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--muted)}
 .field{display:flex;flex-direction:column;margin-bottom:10px}
 label{font-size:13px;margin-bottom:6px;color:var(--muted)}
-input[type="number"], select{background:var(--glass);border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:8px;color:var(--muted)}
+input[type="number"], select{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:8px;color:var(--muted)}
+.btn{background:linear-gradient(180deg,#202020,#141414);padding:8px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.05);cursor:pointer;color:var(--muted);box-shadow:0 4px 12px rgba(0,0,0,0.6)}
+.btn.primary{color:var(--highlight);border:1px solid rgba(192,192,192,0.2)}
 .result{background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);}
 .result h3{margin:0 0 8px;color:var(--highlight);}
 .result-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,0.02);}
@@ -42,27 +32,25 @@ input[type="number"], select{background:var(--glass);border:1px solid rgba(255,2
 <div class="logo"><h1>ALBION</h1></div>
 <div>
 <h2 class="title">Weapons Craft Calculator</h2>
-<div class="muted">Wybierz wariant craftu i oblicz koszty oraz profit</div>
+<div class="muted">Wybierz typ broni i wariant</div>
 </div>
 </header>
 
 <a href="index.html" class="back-link">&larr; Powrót do strony głównej</a>
 
 <div class="field">
-<label>Wybierz broń:</label>
+<label>Typ broni:</label>
+<select id="weaponTypeSelect"></select>
+</div>
+
+<div class="field">
+<label>Wariant broni:</label>
 <select id="weaponSelect"></select>
 </div>
 
 <div class="field">
 <label>Zwrot (%)</label>
-<select id="returnSelect">
-<option value="0.25">25%</option>
-<option value="0.3">30%</option>
-<option value="0.35">35%</option>
-<option value="0.4">40%</option>
-<option value="0.45" selected>45%</option>
-<option value="0.5">50%</option>
-</select>
+<input type="number" id="returnInput" value="45" min="0" max="100">
 </div>
 
 <div class="field">
@@ -96,82 +84,96 @@ input[type="number"], select{background:var(--glass);border:1px solid rgba(255,2
 </div>
 
 <script>
-// Dane broni i wariantów
+// Typy broni i mapping 3 wariantów
+const weaponTypes = {
+"ARCANES":["1H Arcane","Great Arcane","Enigmatic"],
+"AXES":["Battleaxe","Greataxe","Halberd"],
+"BOWS":["Bow","Warbow","Longbow"],
+"CROSSBOWS":["Crossbow","Heavy crossbow","Light crossbow"],
+"CURSEDS":["Cursed staff","Great cursed staff","Demonic staff"],
+"DAGGERS":["Dagger","Daggerpair","Claws"],
+"FIRE STAFFS":["Fire staff","Great fire staff","Infernal staff"],
+"FROST STAFFS":["Frost staff","Great frost staff","Glacial staff"],
+"HAMMERS":["1H Hammer","Polehammer","Great Hammer"],
+"HOLY STAFFS":["1H Holy","Great Holy Staff","Divine staff"],
+"GLOVES":["Brawler gloves","Spiked gauntlets","Battle bracers"],
+"MACES":["1H Mace","Heavy Mace","Morningstar"],
+"NATURES":["Nature staff","Great nature staff","Wild nature staff"],
+"QUARTERSTAFFS":["Quarterstaff","Ironclad staff","Doublebladed staff"],
+"SPEARS":["Spear","Pike","Glaive"],
+"SWORDS":["Broadsword","Claymore","Dual swords"]
+};
+
 const weapons = {
 "1H Arcane": { mats: [{ type: "planks", qty: 16 }, { type: "bars", qty: 8 }] },
 "Great Arcane": { mats: [{ type: "planks", qty: 20 }, { type: "bars", qty: 12 }] },
 "Enigmatic": { mats: [{ type: "planks", qty: 20 }, { type: "bars", qty: 12 }] },
 "Battleaxe": { mats: [{ type: "planks", qty: 8 }, { type: "bars", qty: 16 }] },
 "Greataxe": { mats: [{ type: "planks", qty: 12 }, { type: "bars", qty: 20 }] },
-"Halberd": { mats: [{ type: "planks", qty: 12 }, { type: "bars", qty: 20 }] },
-"Bow": { mats: [{ type: "planks", qty: 32 }] },
-"Warbow": { mats: [{ type: "planks", qty: 32 }] },
-"Longbow": { mats: [{ type: "planks", qty: 32 }] },
-"Crossbow": { mats: [{ type: "planks", qty: 20 }, { type: "bars", qty: 12 }] },
-"Heavy crossbow": { mats: [{ type: "planks", qty: 20 }, { type: "bars", qty: 12 }] },
-"Light crossbow": { mats: [{ type: "planks", qty: 16 }, { type: "bars", qty: 8 }] },
-"Cursed staff": { mats: [{ type: "planks", qty: 16 }, { type: "bars", qty: 8 }] },
-"Great cursed staff": { mats: [{ type: "planks", qty: 20 }, { type: "bars", qty: 12 }] },
-// ... tu możesz dodać wszystkie pozostałe warianty broni
+"Halberd": { mats: [{ type: "planks", qty: 12 }, { type: "bars", qty: 20 }] }
+// dodaj resztę analogicznie...
 };
 
-// Populate select
-const weaponSelect = document.getElementById("weaponSelect");
-for (let w in weapons){
-  const opt = document.createElement("option");
-  opt.value = w;
-  opt.textContent = w;
-  weaponSelect.appendChild(opt);
+const weaponTypeSelect=document.getElementById('weaponTypeSelect');
+const weaponSelect=document.getElementById('weaponSelect');
+
+for(let t in weaponTypes){
+  const opt=document.createElement('option'); opt.value=t; opt.textContent=t;
+  weaponTypeSelect.appendChild(opt);
 }
 
-let currentWeapon = Object.keys(weapons)[0];
-weaponSelect.value = currentWeapon;
+let currentType=Object.keys(weaponTypes)[0]; weaponTypeSelect.value=currentType;
+
+function populateWeapons(){
+  weaponSelect.innerHTML='';
+  weaponTypes[currentType].forEach(w=>{
+    const opt=document.createElement('option'); opt.value=w; opt.textContent=w;
+    weaponSelect.appendChild(opt);
+  });
+}
+
+weaponTypeSelect.addEventListener('change',()=>{
+  currentType=weaponTypeSelect.value; populateWeapons(); updateInputs(); calculate();
+});
+
+let currentWeapon=weaponTypes[currentType][0]; weaponSelect.value=currentWeapon;
+weaponSelect.addEventListener('change',()=>{currentWeapon=weaponSelect.value; updateInputs(); calculate();});
 
 function updateInputs(){
-  const mats = weapons[currentWeapon].mats;
-  document.getElementById("price1").value = mats[0] ? mats[0].qty * 1000 : 0;
-  document.getElementById("price2").value = mats[1] ? mats[1].qty * 1000 : 0;
-  document.getElementById("artifactPrice").value = 0;
-  document.getElementById("sellPrice").value = 50000;
+  const mats=weapons[currentWeapon].mats;
+  document.getElementById('price1').value=mats[0]?mats[0].qty*1000:0;
+  document.getElementById('price2').value=mats[1]?mats[1].qty*1000:0;
+  document.getElementById('artifactPrice').value=0;
+  document.getElementById('sellPrice').value=50000;
 }
 
 function calculate(){
-  const mats = weapons[currentWeapon].mats;
-  const qty1 = mats[0] ? mats[0].qty : 0;
-  const qty2 = mats[1] ? mats[1].qty : 0;
-  const price1 = Number(document.getElementById("price1").value);
-  const price2 = Number(document.getElementById("price2").value);
-  const artifact = Number(document.getElementById("artifactPrice").value);
-  const ret = Number(document.getElementById("returnSelect").value);
-  const sell = Number(document.getElementById("sellPrice").value);
-  const amount = Number(document.getElementById("craftAmount").value);
-
-  const rawCost = qty1*price1 + qty2*price2 + artifact;
-  const costPerItem = rawCost*(1-ret);
-  const profitPerItem = sell - costPerItem;
-  const totalProfit = profitPerItem*amount;
-  const neededQty1 = Math.ceil(qty1*amount*(1-ret));
-  const neededQty2 = Math.ceil(qty2*amount*(1-ret));
-
-  document.getElementById("costPerItem").textContent = costPerItem.toLocaleString();
-  document.getElementById("profitPerItem").textContent = profitPerItem.toLocaleString();
-  document.getElementById("totalProfit").textContent = totalProfit.toLocaleString();
-  document.getElementById("neededMaterials").textContent = `${neededQty1} / ${neededQty2}`;
+  const mats=weapons[currentWeapon].mats;
+  const qty1=mats[0]?mats[0].qty:0;
+  const qty2=mats[1]?mats[1].qty:0;
+  const price1=Number(document.getElementById('price1').value);
+  const price2=Number(document.getElementById('price2').value);
+  const artifact=Number(document.getElementById('artifactPrice').value);
+  const ret=Number(document.getElementById('returnInput').value)/100;
+  const sell=Number(document.getElementById('sellPrice').value);
+  const amount=Number(document.getElementById('craftAmount').value);
+  const rawCost=qty1*price1+qty2*price2+artifact;
+  const costPerItem=rawCost*(1-ret);
+  const profitPerItem=sell-costPerItem;
+  const totalProfit=profitPerItem*amount;
+  const neededQty1=Math.ceil(qty1*amount*(1-ret));
+  const neededQty2=Math.ceil(qty2*amount*(1-ret));
+  document.getElementById('costPerItem').textContent=costPerItem.toLocaleString();
+  document.getElementById('profitPerItem').textContent=profitPerItem.toLocaleString();
+  document.getElementById('totalProfit').textContent=totalProfit.toLocaleString();
+  document.getElementById('neededMaterials').textContent=`${neededQty1} / ${neededQty2}`;
 }
 
-weaponSelect.addEventListener("change", ()=>{
-  currentWeapon = weaponSelect.value;
-  updateInputs();
-  calculate();
+["price1","price2","artifactPrice","sellPrice","craftAmount","returnInput"].forEach(id=>{
+  document.getElementById(id).addEventListener('input',calculate);
 });
 
-["price1","price2","artifactPrice","sellPrice","craftAmount","returnSelect"].forEach(id=>{
-  document.getElementById(id).addEventListener("input", calculate);
-});
-
-updateInputs();
-calculate();
+populateWeapons(); updateInputs(); calculate();
 </script>
-
 </body>
 </html>
