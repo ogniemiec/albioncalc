@@ -1,0 +1,75 @@
+<!-- broadsword.html — przykład podstrony przedmiotu -->
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Broadsword – Kalkulator Craftingu</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <h1>Broadsword</h1>
+  </header>
+  <main class="content">
+    <div class="calculator">
+      <h2>Dane przedmiotu</h2>
+      <p>Surowce:</p>
+      <ul>
+        <li>Bars: 16 szt.</li>
+        <li>Leather: 8 szt.</li>
+      </ul>
+      <label>
+        Cena Bars (za sztukę): <input type="number" id="priceBars" value="0">
+      </label><br>
+      <label>
+        Cena Leather (za sztukę): <input type="number" id="priceLeather" value="0">
+      </label><br>
+      <label>
+        Cena artefaktu: <input type="number" id="artifactPrice" value="0">
+      </label><br>
+      <label>
+        Cena sprzedaży: <input type="number" id="sellPrice" value="0">
+      </label><br>
+      <label>
+        Zwrot (%) surowców: <input type="number" id="returnRate" value="0" min="0" max="100">
+      </label><br>
+      <label>
+        Ilość przedmiotów: <input type="number" id="quantity" value="1" min="1">
+      </label><br>
+      <button id="calculateBtn">Oblicz</button>
+      <div id="results"></div>
+    </div>
+    <button onclick="location.href='index.html'">Powrót do strony głównej</button>
+  </main>
+  <script>
+    document.getElementById("calculateBtn").addEventListener("click", function(){
+      const qtyBars = 16, qtyLeather = 8;
+      const priceBars = Number(document.getElementById("priceBars").value);
+      const priceLeather = Number(document.getElementById("priceLeather").value);
+      const artifactPrice = Number(document.getElementById("artifactPrice").value);
+      const sellPrice = Number(document.getElementById("sellPrice").value);
+      const returnRate = Number(document.getElementById("returnRate").value) / 100;
+      const quantity = Number(document.getElementById("quantity").value);
+
+      const rawCost = qtyBars * priceBars + qtyLeather * priceLeather + artifactPrice;
+      const costAfterReturn = rawCost * (1 - returnRate);
+      const profitPer = sellPrice - costAfterReturn;
+      const totalCost = costAfterReturn * quantity;
+      const totalProfit = profitPer * quantity;
+
+      // surowce potrzebne uwzględniając zwrot
+      const neededBars = qtyBars * quantity * (1 - returnRate);
+      const neededLeather = qtyLeather * quantity * (1 - returnRate);
+
+      document.getElementById("results").innerHTML = `
+        <p>Koszt wytworzenia jednej sztuki: <strong>${costAfterReturn.toFixed(2)}</strong></p>
+        <p>Zysk na jednej sztuce: <strong>${profitPer.toFixed(2)}</strong></p>
+        <p>Łączny koszt dla ${quantity} sztuk: <strong>${totalCost.toFixed(2)}</strong></p>
+        <p>Łączny zysk dla ${quantity} sztuk: <strong>${totalProfit.toFixed(2)}</strong></p>
+        <p>Potrzebna ilość Bars (po uwzględnieniu zwrotu): <strong>${neededBars.toFixed(2)}</strong></p>
+        <p>Potrzebna ilość Leather (po uwzględnieniu zwrotu): <strong>${neededLeather.toFixed(2)}</strong></p>
+      `;
+    });
+  </script>
+</body>
+</html>
