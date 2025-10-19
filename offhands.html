@@ -1,86 +1,131 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Albion Craft Calculator - Offhands</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Albion Offhands Craft Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#101010;--panel:#1c1c1c;--accent:#c0c0c0;--muted:#aaaaaa;--highlight:#d0d0d0;font-family:'Cinzel', serif;}
+html,body{margin:0;padding:0;height:100%;background:linear-gradient(180deg,#101010,#0a0a0a);color:var(--muted);}
+.container{max-width:900px;margin:32px auto;padding:28px;border-radius:16px;background:linear-gradient(180deg,var(--panel),#121212);box-shadow:0 8px 40px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);}
+header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.logo{width:80px;height:80px;border-radius:12px;background:linear-gradient(135deg,#1a1a1a,#2c2c2c);display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.03);box-shadow:0 6px 18px rgba(0,0,0,0.6);}
+.logo h1{margin:0;font-size:20px;color:var(--highlight);}
+h2.title{margin:0;color:var(--highlight);font-size:28px}
+.field{display:flex;flex-direction:column;margin-bottom:10px}
+label{font-size:13px;margin-bottom:6px;color:var(--muted)}
+input[type="number"], select{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.03);padding:8px;border-radius:8px;color:var(--muted)}
+.result{background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.02);}
+.result h3{margin:0 0 8px;color:var(--highlight);}
+.result-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,0.02);}
+.big-number{font-size:20px;color:var(--highlight);font-weight:700}
+.back-link{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--muted);padding:8px;border-radius:8px}
+.back-link:hover{color:var(--highlight)}
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Offhands Craft Calculator</h1>
-    <a href="index.html" class="back-button">Powrót do strony głównej</a>
+<div class="container">
+<header>
+<div class="logo"><h1>ALBION</h1></div>
+<div>
+<h2 class="title">Offhands Craft Calculator</h2>
+<div class="muted">Wybierz typ offhanda</div>
+</div>
+</header>
 
-    <div class="selector">
-      <label for="offhandSelect">Wybierz offhand:</label>
-      <select id="offhandSelect">
-        <option value="">-- Wybierz --</option>
-        <option value="torch">Torch</option>
-        <option value="shield">Shield</option>
-        <option value="tome">Tome</option>
-        <option value="orb">Orb</option>
-      </select>
-    </div>
+<a href="index.html" class="back-link">&larr; Powrót do strony głównej</a>
 
-    <div class="calculator">
-      <label>Cena surowca 1</label>
-      <input type="number" id="mat1Price" placeholder="Cena surowca 1">
-      <label>Cena surowca 2</label>
-      <input type="number" id="mat2Price" placeholder="Cena surowca 2">
-      <label>Cena artefaktu</label>
-      <input type="number" id="artifactPrice" placeholder="Cena artefaktu">
-      <label>Zwrot (%)</label>
-      <input type="number" id="returnInput" value="45" min="0" max="100">
-      <label>Cena sprzedaży</label>
-      <input type="number" id="sellPrice" placeholder="Cena sprzedaży">
-      <label>Ilość craftowanych przedmiotów</label>
-      <input type="number" id="craftAmount" value="1" min="1">
+<div class="field">
+<label>Rodzaj offhanda:</label>
+<select id="offhandSelect"></select>
+</div>
 
-      <button id="calculateBtn">Oblicz</button>
+<div class="field">
+<label>Zwrot (%)</label>
+<input type="number" id="returnInput" value="45" min="0" max="100">
+</div>
 
-      <div class="results">
-        <p id="craftCost">Cena wytworzenia: -</p>
-        <p id="profitEach">Zysk za 1: -</p>
-        <p id="totalProfit">Łączny zysk: -</p>
-        <p id="resourcesNeeded">Potrzebne surowce: -</p>
-      </div>
-    </div>
-  </div>
+<div class="field">
+<label>Cena surowca 1</label>
+<input type="number" id="price1">
+</div>
+<div class="field">
+<label>Cena surowca 2</label>
+<input type="number" id="price2">
+</div>
+<div class="field">
+<label>Cena artefaktu</label>
+<input type="number" id="artifactPrice">
+</div>
+<div class="field">
+<label>Cena sprzedaży</label>
+<input type="number" id="sellPrice">
+</div>
+<div class="field">
+<label>Ilość craftowanych przedmiotów</label>
+<input type="number" id="craftAmount" value="1">
+</div>
 
-  <script>
-    const offhands = {
-      torch:  { mats: [{ type: "planks", qty: 4 }, { type: "leather", qty: 4 }] },
-      shield: { mats: [{ type: "planks", qty: 4 }, { type: "bars", qty: 4 }] },
-      tome:   { mats: [{ type: "planks", qty: 4 }, { type: "cloth", qty: 4 }] },
-      orb:    { mats: [{ type: "bars", qty: 4 },   { type: "cloth", qty: 4 }] }
-    };
+<div class="result">
+<h3>Wyniki:</h3>
+<div class="result-row"><span>Cena wytworzenia 1 sztuki:</span> <span id="costPerItem" class="big-number">0</span></div>
+<div class="result-row"><span>Profit 1 sztuki:</span> <span id="profitPerItem" class="big-number">0</span></div>
+<div class="result-row"><span>Łączny profit:</span> <span id="totalProfit" class="big-number">0</span></div>
+<div class="result-row"><span>Potrzebne surowce:</span> <span id="neededMaterials" class="big-number">0</span></div>
+</div>
+</div>
 
-    document.getElementById('calculateBtn').addEventListener('click', () => {
-      const type = document.getElementById('offhandSelect').value;
-      if (!type) return alert("Wybierz typ offhandu!");
+<script>
+const offhands = {
+  "Torch": { mats: [{ type: "planks", qty: 16 }, { type: "leather", qty: 8 }] },
+  "Shield": { mats: [{ type: "bars", qty: 16 }, { type: "planks", qty: 8 }] },
+  "Tome of Spells": { mats: [{ type: "cloth", qty: 24 }] },
+  "Mistcaller": { mats: [{ type: "planks", qty: 20 }, { type: "leather", qty: 12 }] },
+  "Sarcophagus": { mats: [{ type: "bars", qty: 20 }, { type: "stone", qty: 12 }] },
+  "Leering Cane": { mats: [{ type: "planks", qty: 20 }, { type: "leather", qty: 12 }] }
+};
 
-      const mat1 = offhands[type].mats[0];
-      const mat2 = offhands[type].mats[1];
-      const price1 = +document.getElementById('mat1Price').value;
-      const price2 = +document.getElementById('mat2Price').value;
-      const artifact = +document.getElementById('artifactPrice').value;
-      const ret = +document.getElementById('returnInput').value / 100;
-      const sell = +document.getElementById('sellPrice').value;
-      const amount = +document.getElementById('craftAmount').value;
+const offhandSelect = document.getElementById('offhandSelect');
+for (let o in offhands) {
+  const opt = document.createElement('option');
+  opt.value = o; opt.textContent = o;
+  offhandSelect.appendChild(opt);
+}
 
-      const baseCost = (mat1.qty * price1 + mat2.qty * price2 + artifact);
-      const craftCost = baseCost * (1 - ret);
-      const profitEach = sell - craftCost;
-      const totalProfit = profitEach * amount;
+let currentOffhand = Object.keys(offhands)[0];
+offhandSelect.value = currentOffhand;
 
-      const needed1 = mat1.qty * amount * (1 - ret);
-      const needed2 = mat2.qty * amount * (1 - ret);
+function calculate(){
+  const mats = offhands[currentOffhand].mats;
+  const qty1 = mats[0]?mats[0].qty:0;
+  const qty2 = mats[1]?mats[1].qty:0;
+  const price1 = Number(document.getElementById('price1').value);
+  const price2 = Number(document.getElementById('price2').value);
+  const artifact = Number(document.getElementById('artifactPrice').value);
+  const ret = Number(document.getElementById('returnInput').value)/100;
+  const sell = Number(document.getElementById('sellPrice').value);
+  const amount = Number(document.getElementById('craftAmount').value);
+  const rawCost = qty1*price1 + qty2*price2 + artifact;
+  const costPerItem = rawCost*(1-ret);
+  const profitPerItem = sell-costPerItem;
+  const totalProfit = profitPerItem*amount;
+  const neededQty1 = Math.ceil(qty1*amount*(1-ret));
+  const neededQty2 = Math.ceil(qty2*amount*(1-ret));
+  document.getElementById('costPerItem').textContent = costPerItem.toLocaleString();
+  document.getElementById('profitPerItem').textContent = profitPerItem.toLocaleString();
+  document.getElementById('totalProfit').textContent = totalProfit.toLocaleString();
+  document.getElementById('neededMaterials').textContent = `${neededQty1} / ${neededQty2}`;
+}
 
-      document.getElementById('craftCost').textContent = `Cena wytworzenia: ${craftCost.toFixed(0)} srebra`;
-      document.getElementById('profitEach').textContent = `Zysk za 1: ${profitEach.toFixed(0)} srebra`;
-      document.getElementById('totalProfit').textContent = `Łączny zysk: ${totalProfit.toFixed(0)} srebra`;
-      document.getElementById('resourcesNeeded').textContent = `Potrzebne surowce: ${needed1.toFixed(1)} ${mat1.type}, ${needed2.toFixed(1)} ${mat2.type}`;
-    });
-  </script>
+offhandSelect.addEventListener('change', ()=>{
+  currentOffhand = offhandSelect.value;
+  calculate();
+});
+["price1","price2","artifactPrice","sellPrice","craftAmount","returnInput"].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calculate);
+});
+calculate();
+</script>
 </body>
 </html>
