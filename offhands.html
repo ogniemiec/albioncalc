@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Albion Craft Calculator - Offhands</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Offhands Craft Calculator</h1>
+    <a href="index.html" class="back-button">Powrót do strony głównej</a>
+
+    <div class="selector">
+      <label for="offhandSelect">Wybierz offhand:</label>
+      <select id="offhandSelect">
+        <option value="">-- Wybierz --</option>
+        <option value="torch">Torch</option>
+        <option value="shield">Shield</option>
+        <option value="tome">Tome</option>
+        <option value="orb">Orb</option>
+      </select>
+    </div>
+
+    <div class="calculator">
+      <label>Cena surowca 1</label>
+      <input type="number" id="mat1Price" placeholder="Cena surowca 1">
+      <label>Cena surowca 2</label>
+      <input type="number" id="mat2Price" placeholder="Cena surowca 2">
+      <label>Cena artefaktu</label>
+      <input type="number" id="artifactPrice" placeholder="Cena artefaktu">
+      <label>Zwrot (%)</label>
+      <input type="number" id="returnInput" value="45" min="0" max="100">
+      <label>Cena sprzedaży</label>
+      <input type="number" id="sellPrice" placeholder="Cena sprzedaży">
+      <label>Ilość craftowanych przedmiotów</label>
+      <input type="number" id="craftAmount" value="1" min="1">
+
+      <button id="calculateBtn">Oblicz</button>
+
+      <div class="results">
+        <p id="craftCost">Cena wytworzenia: -</p>
+        <p id="profitEach">Zysk za 1: -</p>
+        <p id="totalProfit">Łączny zysk: -</p>
+        <p id="resourcesNeeded">Potrzebne surowce: -</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const offhands = {
+      torch:  { mats: [{ type: "planks", qty: 4 }, { type: "leather", qty: 4 }] },
+      shield: { mats: [{ type: "planks", qty: 4 }, { type: "bars", qty: 4 }] },
+      tome:   { mats: [{ type: "planks", qty: 4 }, { type: "cloth", qty: 4 }] },
+      orb:    { mats: [{ type: "bars", qty: 4 },   { type: "cloth", qty: 4 }] }
+    };
+
+    document.getElementById('calculateBtn').addEventListener('click', () => {
+      const type = document.getElementById('offhandSelect').value;
+      if (!type) return alert("Wybierz typ offhandu!");
+
+      const mat1 = offhands[type].mats[0];
+      const mat2 = offhands[type].mats[1];
+      const price1 = +document.getElementById('mat1Price').value;
+      const price2 = +document.getElementById('mat2Price').value;
+      const artifact = +document.getElementById('artifactPrice').value;
+      const ret = +document.getElementById('returnInput').value / 100;
+      const sell = +document.getElementById('sellPrice').value;
+      const amount = +document.getElementById('craftAmount').value;
+
+      const baseCost = (mat1.qty * price1 + mat2.qty * price2 + artifact);
+      const craftCost = baseCost * (1 - ret);
+      const profitEach = sell - craftCost;
+      const totalProfit = profitEach * amount;
+
+      const needed1 = mat1.qty * amount * (1 - ret);
+      const needed2 = mat2.qty * amount * (1 - ret);
+
+      document.getElementById('craftCost').textContent = `Cena wytworzenia: ${craftCost.toFixed(0)} srebra`;
+      document.getElementById('profitEach').textContent = `Zysk za 1: ${profitEach.toFixed(0)} srebra`;
+      document.getElementById('totalProfit').textContent = `Łączny zysk: ${totalProfit.toFixed(0)} srebra`;
+      document.getElementById('resourcesNeeded').textContent = `Potrzebne surowce: ${needed1.toFixed(1)} ${mat1.type}, ${needed2.toFixed(1)} ${mat2.type}`;
+    });
+  </script>
+</body>
+</html>
